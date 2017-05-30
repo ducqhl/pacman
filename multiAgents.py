@@ -183,7 +183,53 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+                PACMAN_INDEX = 0
+        #call max_funtion for best action of pacman
+        score, action = self.max_function(gameState,PACMAN_INDEX)
+        return action
+
+    #return heuristic value of agent(index) will gain in a gameState        
+    def value(self, gameState, agentIndex):
+        #reach out of depth  
+        if agentIndex == self.depth * gameState.getNumAgents():
+            return self.evaluationFunction(gameState), "noMove";
+        if gameState.isWin() or gameState.isLose():
+            return gameState.getScore(), "noMove";
+             
+        if agentIndex % gameState.getNumAgents() == 0:
+            #agentIndex of PACMAN       
+            return self.max_function(gameState, agentIndex);
+        else :
+            #agentIndex of GHOST
+            return self.min_function(gameState, agentIndex);
+            
+    def max_function(self, gameState, agentIndex):
+        agentStep = agentIndex % gameState.getNumAgents()  #in case if depth > 1, PACMAN plays more than 1 times
+        acts = gameState.getLegalActions(agentStep);       
+        
+        max_score = float("-inf")
+        best_act = acts[0]
+        
+        for a in acts :
+            stateIfAction = gameState.generateSuccessor(agentStep,a)
+            score, action = self.value(stateIfAction, agentIndex + 1)
+            if score > max_score:
+                max_score = score
+                best_act = a
+        return [max_score,best_act]
+        
+    def min_function(self, gameState, agentIndex):     
+        agentStep = agentIndex % gameState.getNumAgents()  #in case if depth > 1, GHOST plays more than 1 times  
+        acts = gameState.getLegalActions(agentStep);
+        min_score = float("inf")
+        worst_act = acts[0]
+        for a in acts :
+            stateIfAction = gameState.generateSuccessor(agentStep,a)
+            score, action = self.value(stateIfAction, agentIndex+1)
+            if score < min_score:
+                min_score = score
+                worst_act = a
+        return [min_score,worst_act]
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
