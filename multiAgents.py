@@ -190,7 +190,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     #return heuristic value of agent(index) will gain in a gameState        
     def value(self, gameState, agentIndex):
-        #reach out of depth  
+        #agentIndex reach out of depth  
         if agentIndex == self.depth * gameState.getNumAgents():
             return self.evaluationFunction(gameState), "noMove";
         if gameState.isWin() or gameState.isLose():
@@ -251,7 +251,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     #return heuristic value of agent(index) will gain in a gameState        
     def value(self, gameState, agentIndex, alpha, beta):
-        #reach out of depth  
+        #agentIndex reach out of depth  
         if agentIndex == self.depth * gameState.getNumAgents():
             return self.evaluationFunction(gameState), "noMove"
         if gameState.isWin() or gameState.isLose():
