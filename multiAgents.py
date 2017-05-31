@@ -311,7 +311,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 beta = score
             
         return min_score,worst_act 
-        util.raiseNotDefined()
+  
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -326,7 +326,65 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+	
+        #get best action of pacman
+        PACMAN_INDEX = 0
+        acts = gameState.getLegalActions(PACMAN_INDEX); 
+        max_score = float("-inf")      
+        bestAct = acts[0]
+        for act in acts:
+            #get score of nextState when do a action
+            stateIfAction = gameState.generateSuccessor(PACMAN_INDEX,act)
+            score = self.value(stateIfAction, PACMAN_INDEX + 1) 
+            if score > max_score:  
+                max_score = score   
+                bestAct = act
+            
+        return bestAct
+
+    #return heuristic value of agent(index) will gain in a gameState        
+    def value(self, gameState, agentIndex):
+        #agentIndex reach out of depth  
+        if agentIndex == self.depth * gameState.getNumAgents():
+            return self.evaluationFunction(gameState);
+        if gameState.isWin() or gameState.isLose():
+            return gameState.getScore();
+             
+        if agentIndex % gameState.getNumAgents() == 0:
+            #agentIndex of PACMAN       
+            return self.max_function(gameState, agentIndex);
+        else :
+            #agentIndex of GHOST
+            return self.exp_function(gameState, agentIndex);
+            
+    def max_function(self, gameState, agentIndex):
+        """Return max score of this branch"""
+        agentStep = agentIndex % gameState.getNumAgents()  #in case if depth > 1, PACMAN plays more than 1 times
+        acts = gameState.getLegalActions(agentStep);       
+        
+        max_score = float("-inf")
+        
+        for act in acts :
+            stateIfAction = gameState.generateSuccessor(agentStep,act)
+            score = self.value(stateIfAction, agentIndex + 1)
+            max_score = max(max_score, score)
+        return max_score
+        
+    def exp_function(self, gameState, agentIndex):    
+        """Return Expection Score of this branch"""
+        agentStep = agentIndex % gameState.getNumAgents()  #in case if depth > 1, GHOST plays more than 1 times  
+        acts = gameState.getLegalActions(agentStep);
+        sumOfScore = 0.0
+        numOfActs = len(acts);
+        expectionScore = 0.0
+        
+        for act in acts :
+            stateIfAction = gameState.generateSuccessor(agentStep,act)
+            score = self.value(stateIfAction, agentIndex+1)
+            sumOfScore += score
+        
+        expectionScore = sumOfScore/numOfActs
+        return expectionScore
 
 def betterEvaluationFunction(currentGameState):
     """
