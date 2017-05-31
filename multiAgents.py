@@ -241,6 +241,76 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+	PACMAN_INDEX = 0      
+        alpha = float('-inf') #max score of pacman can reach 
+        beta  =  float('inf') #min score of ghost can make
+        
+        #call max_funtion for best action of pacman
+        score, action= self.max_function(gameState,PACMAN_INDEX, alpha, beta)
+        return action
+
+    #return heuristic value of agent(index) will gain in a gameState        
+    def value(self, gameState, agentIndex, alpha, beta):
+        #reach out of depth  
+        if agentIndex == self.depth * gameState.getNumAgents():
+            return self.evaluationFunction(gameState), "noMove"
+        if gameState.isWin() or gameState.isLose():
+            return gameState.getScore(), "noMove"
+             
+        if agentIndex % gameState.getNumAgents() == 0:
+            #agentIndex of PACMAN       
+            return self.max_function(gameState, agentIndex, alpha, beta);
+        else :
+            #agentIndex of GHOST
+            return self.min_function(gameState, agentIndex, alpha, beta);
+            
+    def max_function(self, gameState, agentIndex, alpha, beta):
+        agentStep = agentIndex % gameState.getNumAgents()  #in case if depth > 1, PACMAN plays more than 1 times
+        acts = gameState.getLegalActions(agentStep);       
+        
+        max_score = float("-inf")
+        best_act = acts[0]
+        nextAgent =  agentIndex + 1
+        
+        for act in acts :
+            stateIfAction = gameState.generateSuccessor(agentStep,act)           
+            score, action = self.value(stateIfAction, nextAgent, alpha, beta)
+            
+            if score > max_score:
+                max_score = score
+                best_act = act           
+            if score > beta: 
+                #the min_function call this max_function will nerver choose this action
+                #because them can chosse a worse action (in case orther max_function has lower score)
+                return max_score, best_act         
+            if score > alpha:
+                #save a highest value can reached up to date
+                #use it for prunne (min_function)- branches, which definitely can not gives back higher scores
+                alpha = score
+        return max_score, best_act
+        
+    def min_function(self, gameState, agentIndex, alpha, beta):     
+        agentStep = agentIndex % gameState.getNumAgents()  #in case if depth > 1, GHOST plays more than 1 times  
+        acts = gameState.getLegalActions(agentStep);
+        min_score = float("inf")
+        worst_act = acts[0]
+        nextAgent = agentIndex + 1
+        for act in acts :
+            stateIfAction = gameState.generateSuccessor(agentStep,act)           
+            score, action = self.value(stateIfAction, nextAgent, alpha, beta)
+            if score < min_score:
+                min_score = score
+                worst_act = act
+            if score < alpha : 
+                #the max_function call this min_function will nerver choose this action
+                #because them can chosse a better action (in case orther min_function gives back higher score)
+                return min_score,worst_act 
+            if beta > score:
+                #save a lowest value can make up to date
+                #use it for prunne (max_function)- branches, which definitely can not gives back lower scores
+                beta = score
+            
+        return min_score,worst_act 
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
